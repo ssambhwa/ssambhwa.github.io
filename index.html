@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+
+<head>
+
+<style>
+
+a {
+    text-decoration: none;
+    display: inline-block;
+    padding: 4px 8px;
+}
+
+a:hover {
+    background-color: #ddd;
+    color: black;
+}
+
+.previous {
+    background-color: #f1f1f1;
+    color: black;
+}
+
+.next {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.round {
+    border-radius: 50%;
+}
+button.accordion {
+    background-color: #eee;
+    color: #444;
+    cursor: pointer;
+    padding: 18px;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: 15px;
+    transition: 0.4s;
+}
+
+button.accordion.active, button.accordion:hover {
+    background-color: #ddd; 
+}
+
+div.panel {
+    padding: 0 18px;
+    display: none;
+    background-color: white;
+}
+.axis {
+	  font: 12px sans-serif;
+	}
+
+	.axis path,
+	.axis line {
+	  fill: none;
+	  stroke: #000;
+	  shape-rendering: crispEdges;
+	}
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 2px;
+}
+
+body {
+  margin: 15px;
+  background-color: #F1F3F3    
+}
+.bar {
+	fill: #6F257F;
+}
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #D4D8DA;
+  stroke-width: 1px;
+  shape-rendering: crispEdges;
+}
+.x path {
+	display: none;
+}
+.toolTip {
+	position: absolute;
+  display: none;
+  min-width: 80px;
+  height: auto;
+  background: none repeat scroll 0 0 #ffffff;
+  border: 1px solid #6F257F;
+  padding: 14px;
+  text-align: center;
+}
+
+</style>
+
+</head>
+
+<body>
+
+
+<button class="accordion">About this Visualization</button>
+<div class="panel">
+  <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+</div>
+
+
+<p>Click the button to trigger a function that will output "Hello World" in a p element with id="demo".</p>
+
+<a href="#" class="previous">&laquo; Previous</a>
+<button onclick="myFunction1()">1</button>
+<button onclick="myFunction2()">2</button>
+<button onclick="myFunction3()">3</button>
+<button onclick="myFunction4()">4</button>
+<a href="#" class="next">Next &raquo;</a>
+
+
+
+
+
+<div id="svg-container">
+    <svg id="viz" width="720" height="405" > </svg>
+</div>
+
+
+
+<p id="demo"></p>
+
+<script>
+
+var acc = document.getElementsByClassName("accordion");
+var i;
+
+for (i = 0; i < acc.length; i++) {
+    acc[i].onclick = function(){
+        this.classList.toggle("active");
+        var panel = this.nextElementSibling;
+        if (panel.style.display === "block") {
+            panel.style.display = "none";
+        } else {
+            panel.style.display = "block";
+        }
+    }
+}
+function myFunction1() {
+	d3.selectAll("svg > *").remove();
+    document.getElementById("demo").innerHTML = "Hello World";
+		
+	var width = 720;
+	var height = 405;
+	var data = [ 10, 5, 5, 8, 9, 3, 2 ];
+	
+
+	d3.select(document.getElementById("viz")).selectAll("rect")
+	   .data(data)
+	   .attr("x", function(d, i) {
+			return i * 20;
+	   })
+	   .attr("y", function(d) {
+			return ((height/2.0) - (d * 5.0));
+	   })
+	   .attr("width", 15)
+	   .attr("height", function(d) {
+			return d * 10;
+	   })
+	   .attr("tokenid", function(d,i) {
+			return (d * i * 64);
+	   })
+	   .attr("fill", "steelblue");
+	
+	
+	
+	d3.select(document.getElementById("viz")).selectAll("rect")
+	   .data(data)
+	   .enter()
+	   .append("rect")
+	   .attr("x", function(d, i) {
+			return i * 20;
+	   })
+	   .attr("y", function(d) {
+			return ((height/2.0) - (d * 5));
+	   })
+	   .attr("width", 15)
+	   .attr("height", function(d) {
+			return d * 10;
+	   })
+	   .attr("tokenid", function(d,i) {
+			return (d * i * 64);
+	   })
+	   .attr("fill", "steelblue");
+	   
+	   d3.select(document.getElementById("viz")).selectAll("rect")
+	   .data(data)
+	   .exit()
+	   .remove();
+	   
+			
+}
+
+function myFunction2() {
+    d3.selectAll("svg > *").remove();
+	document.getElementById("demo").innerHTML = "Getting there";
+var svg = d3.select("svg"),
+    margin = {top: 20, right: 20, bottom: 30, left: 40},
+    width = +svg.attr("width") - margin.left - margin.right,
+    height = +svg.attr("height") - margin.top - margin.bottom,
+    g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var x = d3.scaleBand()
+    .rangeRound([0, width])
+    .paddingInner(0.05)
+    .align(0.1);
+
+var y = d3.scaleLinear()
+    .rangeRound([height, 0]);
+
+var z = d3.scaleOrdinal()
+    .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+
+d3.csv("data.csv", function(d, i, columns) {
+  for (i = 1, t = 0; i < columns.length; ++i) t += d[columns[i]] = +d[columns[i]];
+  d.total = t;
+  return d;
+}, function(error, data) {
+  if (error) throw error;
+
+  var keys = data.columns.slice(1);
+
+  data.sort(function(a, b) { return b.total - a.total; });
+  x.domain(data.map(function(d) { return d.State; }));
+  y.domain([0, d3.max(data, function(d) { return d.total; })]).nice();
+  z.domain(keys);
+
+  g.append("g")
+    .selectAll("g")
+    .data(d3.stack().keys(keys)(data))
+    .enter().append("g")
+      .attr("fill", function(d) { return z(d.key); })
+    .selectAll("rect")
+    .data(function(d) { return d; })
+    .enter().append("rect")
+      .attr("x", function(d) { return x(d.data.State); })
+      .attr("y", function(d) { return y(d[1]); })
+      .attr("height", function(d) { return y(d[0]) - y(d[1]); })
+      .attr("width", x.bandwidth());
+
+  g.append("g")
+      .attr("class", "axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x));
+
+  g.append("g")
+      .attr("class", "axis")
+      .call(d3.axisLeft(y).ticks(null, "s"))
+    .append("text")
+      .attr("x", 2)
+      .attr("y", y(y.ticks().pop()) + 0.5)
+      .attr("dy", "0.32em")
+      .attr("fill", "#000")
+      .attr("font-weight", "bold")
+      .attr("text-anchor", "start")
+      .text("Population");
+
+  var legend = g.append("g")
+      .attr("font-family", "sans-serif")
+      .attr("font-size", 10)
+      .attr("text-anchor", "end")
+    .selectAll("g")
+    .data(keys.slice().reverse())
+    .enter().append("g")
+      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+  legend.append("rect")
+      .attr("x", width - 19)
+      .attr("width", 19)
+      .attr("height", 19)
+      .attr("fill", z);
+
+  legend.append("text")
+      .attr("x", width - 24)
+      .attr("y", 9.5)
+      .attr("dy", "0.32em")
+      .text(function(d) { return d; });
+});
+
+}
+
+
+function myFunction3() {
+
+d3.selectAll("svg > *").remove();
+document.getElementById("demo").innerHTML = "Stacked bar chart";
+
+
+  // text label for the x axis
+	//  d3.select(document.getElementById("viz")).append("text")             
+	//	  .attr("transform",
+	//			"translate(" + (w/2) + " ," + 
+	//						   (h + margin.top + 20) + ")")
+	//	  .style("text-anchor", "middle")
+	//	  .text("Date");
+
+  
+				
+
+
+	//Original data
+	var dataset = [
+		{ profit: 177337, sales: 3178638 },
+		{ profit: 451990, sales: 2258384 },
+		{ profit: 683088, sales: 3515005 }
+		
+	];
+
+	//Set up stack method
+	var stack = d3.stack()
+				  .keys([ "profit", "sales" ])
+				  .order(d3.stackOrderAscending);  
+
+	//Data, stacked
+	var series = stack(dataset);
+
+	
+				
+
+	var svg = d3.select("svg"),
+    margin = {top: 100, right: 300, bottom: 50, left: 100},
+    width = +svg.attr("width") - margin.left - margin.right
+    height = +svg.attr("height") - margin.top - margin.bottom;
+    g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+	
+	//Set up scales
+	var x = d3.scaleBand()
+		.domain(d3.range(dataset.length))
+		.range([0, width])
+		.paddingInner(0.05)
+		.align(0.1);
+
+		
+	var y = d3.scaleLinear()
+		.domain([0, d3.max(dataset, function(d) {
+				return d.profit + d.sales;
+			})
+		])
+		.range([height, 0]);  // <-- Flipped vertical scale
+		
+	//Easy colors accessible via a 10-step ordinal scale
+	var colors = d3.scaleOrdinal(d3.schemeCategory10);
+	
+	
+	// Add a group for each row of data
+	
+	
+	
+	g.append("g")
+    .selectAll("g")
+    .data(series)
+    .enter().append("g")
+      .attr("fill", function(d, i) {
+			return colors(i);
+		})
+    .selectAll("rect")
+    .data(function(d) { return d; })
+    .enter().append("rect")
+      .attr("x", function(d, i) { return x(i); })
+      .attr("y", function(d) { return y(d[1]); })
+      .attr("height", function(d) { return y(d[0]) - y(d[1]); })
+      .attr("width", x.bandwidth())
+	  .on("mouseover", function() { tooltip.style("display", null); })
+      .on("mouseout", function() { tooltip.style("display", "none"); })
+      .on("mousemove", function(d) {
+      console.log(d);
+      var xPosition = d3.mouse(this)[0] - 5;
+      var yPosition = d3.mouse(this)[1] - 5;
+      tooltip.attr("transform", "translate(" + xPosition + "," + yPosition + ")");
+      tooltip.select("text").text(d[1]-d[0]);
+    });
+	
+
+	
+	
+ var tickLabels = ['Furniture','Office Supply','Technology']
+	
+
+// x-axis
+
+  g.append("g")
+      .attr("class", "axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x).tickFormat(function(d,i){ return tickLabels[i] }))
+	  .append("text")
+            .attr("x", (width - margin.left)/ 2)
+            .attr("y", margin.bottom * 0.9)
+            .attr("dx", "0.32em")
+            .attr("fill", "#000")
+            .attr("font-weight", "bold")
+            .attr("text-anchor", "start")
+			.attr("font-family", "sans-serif")
+			.attr("font-size", 14)
+            .text("Department");
+
+// Left y-axis
+			
+	g.append("g")
+      .attr("class", "axis")
+      .call(d3.axisLeft(y).ticks(null, "s"))
+    .append("text")
+      .attr("x", - 0.8*margin.left)
+     // .attr("y", y(y.ticks().pop()) + 0.5)
+	  .attr("y", height/2)
+      .attr("dy", "0.32em")
+      .attr("fill", "#000")
+      .attr("font-weight", "bold")
+      .attr("text-anchor", "start")
+	  .attr("font-size", "14px")
+      .text("Sales");
+
+// Right y-axis
+	  
+	  g.append("g")
+      .attr("class", "axis")
+      .call(d3.axisRight(y).ticks(null, "s"))
+	  .attr("transform", "translate (" + width + ", 0)")
+    .append("text")
+      .attr("x", 0.15*margin.right)
+	  .attr("y", height/2)
+      .attr("dy", "0.32em")
+      .attr("fill", "#000")
+      .attr("font-weight", "bold")
+      .attr("text-anchor", "start")
+	  .attr("font-size", "14px")
+      .text("Profit");
+	
+// Legend
+	
+	var legend = g.append("g")
+      .attr("font-family", "sans-serif")
+      .attr("font-size", 14)
+	  .attr("font-weight", "bold")
+      .attr("text-anchor", "end")
+    .selectAll("g")
+    .data(["Profit", "Sales"])
+    .enter().append("g")
+      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+	 
+
+	  legend.append("text")
+		  .attr("x", width + 0.35* margin.right)
+		  .attr("y", 9.5)
+		  .attr("dy", "0.32em")
+		  .attr("font-family", "sans-serif")
+		  .attr("font-size", 14)
+		  .text(function(d) { return d; });
+	
+	legend.append("rect")
+		  .attr("x", width + 0.4*margin.right)
+		  .attr("width", 19)
+		  .attr("height", 19)
+		  .attr("fill", function(d,i){return colors(i)});
+	  
+  
+
+	  
+// Prep the tooltip bits, initial display is hidden
+  var tooltip = svg.append("g")
+    .attr("class", "tooltip")
+    .style("display", "none");
+      
+  tooltip.append("rect")
+    .attr("width", 60)
+    .attr("height", 20)
+    .attr("fill", "white")
+    .style("opacity", 0.5);
+
+  tooltip.append("text")
+    .attr("x", 30)
+    .attr("dy", "1.2em")
+    .style("text-anchor", "middle")
+    .attr("font-size", "12px")
+    .attr("font-weight", "bold");  
+	 
+  
+
+}
+function myFunction4() {
+
+d3.selectAll("svg > *").remove();
+document.getElementById("demo").innerHTML = "Stacked bar chart";
+
+var dataset = [
+		{ area: "central", dept: "furniture", profit: 53987, sales: 785116 },
+		{ area: "central", dept: "office supplies", profit: 124093, sales: 530530},
+		{ area: "central", dept: "technology", profit: 280588, sales: 978957 },
+		
+		{ area: "east", dept: "furniture", profit: 39185, sales: 1150249 },
+		{ area: "east", dept: "office supplies", profit: 201480, sales: 938107},
+		{ area: "east", dept: "technology", profit: 234359, sales: 1054766 },
+		
+		{ area: "south", dept: "furniture", profit: 18835, sales: 516757 },
+		{ area: "south", dept: "office supplies", profit: 60786, sales: 353242},
+		{ area: "south", dept: "technology", profit: 27524, sales: 641950 },
+		
+		{ area: "west", dept: "furniture", profit: 65330, sales: 726516},
+		{ area: "west", dept: "office supplies", profit: 65631, sales: 436505},
+		{ area: "west", dept: "technology", profit: 140617, sales: 839332 }
+	];
+
+var svg = d3.select("svg"),
+    margin = {top: 20, right: 20, bottom: 30, left: 80},
+    width = +svg.attr("width") - margin.left - margin.right,
+    height = +svg.attr("height") - margin.top - margin.bottom;
+  
+var tooltip = d3.select("body").append("div").attr("class", "toolTip");
+  
+var x = d3.scaleLinear().range([0, width]);
+var y = d3.scaleBand().range([height, 0]);
+
+var g = svg.append("g")
+		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  
+	
+	var data = [
+		{"area": "central ", "value": 18000},
+		{"area": "Riverside ", "value": 17000},
+		{"area": "Picton ", "value": 80000},
+		{"area": "Everton ", "value": 55000},
+		{"area": "Kensington ", "value": 100000},
+		{"area": "Kirkdale", "value": 50000}
+	]
+  
+  	data.sort(function(a, b) { return a.value - b.value; });
+  
+  	x.domain([0, d3.max(data, function(d) { return d.value; })]);
+    y.domain(data.map(function(d) { return d.area; })).padding(0.1);
+
+    g.append("g")
+        .attr("class", "x axis")
+       	.attr("transform", "translate(0," + height + ")")
+      	.call(d3.axisBottom(x).ticks(5).tickFormat(function(d) { return parseInt(d / 1000); }).tickSizeInner([-height]));
+
+    g.append("g")
+        .attr("class", "y axis")
+        .call(d3.axisLeft(y));
+
+    g.selectAll(".bar")
+        .data(data)
+      .enter().append("rect")
+        .attr("class", "bar")
+        .attr("x", 0)
+        .attr("height", y.bandwidth())
+        .attr("y", function(d) { return y(d.area); })
+        .attr("width", function(d) { return x(d.value); })
+        .on("mousemove", function(d){
+            tooltip
+              .style("left", d3.event.pageX - 50 + "px")
+              .style("top", d3.event.pageY - 70 + "px")
+              .style("display", "inline-block")
+              .html((d.area) + "<br>" + "£" + (d.value));
+        })
+    	.on("mouseout", function(d){ tooltip.style("display", "none");});
+
+}
+</script>
+
+</body>
+</html>
