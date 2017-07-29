@@ -110,25 +110,24 @@ body {
 </div>
 
 
-<p>Click the button to trigger a function that will output "Hello World" in a p element with id="demo".</p>
+<p>Click the button to select a page.</p>
 
 
 <button onclick="myFunction1()">1</button>
 <button onclick="myFunction2()">2</button>
 <button onclick="myFunction3()">3</button>
+<button onclick="myFunction4()">4</button>
 
 
 
-
-
-
-<div id="svg-container">
-    <svg id="viz" width="1020" height="605" > </svg>
-</div>
 
 
 
 <p id="demo"></p>
+<div id="svg-container">
+    <svg id="viz" width="1020" height="605" > </svg>
+</div>
+
 
 <script>
 
@@ -147,22 +146,20 @@ for (i = 0; i < acc.length; i++) {
     }
 }
 
+document.getElementById("demo").style.fontFamily = "sans-sarif";
+document.getElementById("demo").style.fontWeight = "bold";
+document.getElementById("demo").style.fontSize = "medium";
+document.getElementById("demo").style.textAlign = "left";
+document.getElementById("demo").style.color = "black";
 
 
 function myFunction1() {
 
 d3.selectAll("svg > *").remove();
-document.getElementById("demo").innerHTML = "Stacked bar chart";
+document.getElementById("demo").innerHTML = "Sales/Profit by Department";
 
 
-  // text label for the x axis
-	//  d3.select(document.getElementById("viz")).append("text")             
-	//	  .attr("transform",
-	//			"translate(" + (w/2) + " ," + 
-	//						   (h + margin.top + 20) + ")")
-	//	  .style("text-anchor", "middle")
-	//	  .text("Date");
-
+  
   
 d3.select(document.getElementById("viz"))
 .attr("width", 720)
@@ -355,11 +352,11 @@ d3.select(document.getElementById("viz"))
 function myFunction2() {
 
 d3.selectAll("svg > *").remove();
-document.getElementById("demo").innerHTML = "Stacked bar chart";
+document.getElementById("demo").innerHTML = "Sales/Profit by Region/Department";
 
 d3.select(document.getElementById("viz"))
 .attr("width", 1120)
-.attr("height", 605);
+.attr("height", 545);
 
 var dataset = [
 		{ region: "central", dept: "furniture", profit: 53987, sales: 785116-53987, ind: 0},
@@ -551,7 +548,7 @@ var tooltip = d3.select("body").append("div").attr("class", "toolTip");
 
 	 
 
-	  legend.append("text")
+	legend.append("text")
 		  .attr("x", width + 0.80 * margin.right)
 		  .attr("y", 9.5)
 		  .attr("dy", "0.32em")
@@ -592,241 +589,282 @@ var tooltip = d3.select("body").append("div").attr("class", "toolTip");
 function myFunction3() {
 
 d3.selectAll("svg > *").remove();
+document.getElementById("demo").innerHTML = "Sales over Time by Region ";
+
+
+
+d3.select(document.getElementById("viz"))
+.attr("width", 920)
+.attr("height", 405);
+
+var svg = d3.select("svg"),
+    margin = {top: 20, right: 80, bottom: 30, left: 80},
+    width = svg.attr("width") - margin.left - margin.right,
+    height = svg.attr("height") - margin.top - margin.bottom,
+    g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var parseTime = d3.timeParse("%Y%m%d");
+
+var x = d3.scaleTime().range([0, width]),
+    y = d3.scaleLinear().range([height, 0]),
+    z = d3.scaleOrdinal(d3.schemeCategory10);
+
+var line = d3.line()
+    .curve(d3.curveLinear)
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.sales); });
+
+d3.tsv("super_store_sales.txt", type, function(error, data) {
+  if (error) throw error;
+
+  var regions = data.columns.slice(1).map(function(id) {
+    return {
+      id: id,
+      values: data.map(function(d) {
+        return {date: d.date, sales: d[id]};
+      })
+    };
+  });
+
+  x.domain(d3.extent(data, function(d) { return d.date; }));
+
+  y.domain([
+    d3.min(regions, function(c) { return d3.min(c.values, function(d) { return d.sales; }); }),
+    d3.max(regions, function(c) { return d3.max(c.values, function(d) { return d.sales; }); })
+  ]);
+
+  z.domain(regions.map(function(c) { return c.id; }));
+
+  g.append("g")
+      .attr("class", "axis axis--x")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x));
+
+  g.append("g")
+      .attr("class", "axis axis--y")
+      .call(d3.axisLeft(y))
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", "0.71em")
+      .attr("fill", "#000")
+	  .attr("font-weight", "normal")
+	  .attr("font-size", "14px")
+      .text("Sales [$]");
+
+  var region = g.selectAll(".region")
+    .data(regions)
+    .enter().append("g")
+      .attr("class", "region");
+
+  region.append("path")
+      .attr("class", "line")
+      .attr("d", function(d) { return line(d.values); })
+      .style("stroke", function(d) { return z(d.id); });
+
+  region.append("text")
+      .datum(function(d) { return {id: d.id, value: d.values[d.values.length - 1]}; })
+      .attr("transform", function(d) { return "translate(" + x(d.value.date) + "," + y(d.value.sales) + ")"; })
+      .attr("x", 3)
+      .attr("dy", "0.35em")
+	  .attr("font-weight", "normal")
+      .style("font", "14px sans-serif")
+      .text(function(d) { return d.id; });
+	  
+ 
+});
+
+function type(d, _, columns) {
+  d.date = parseTime(d.date);
+  for (var i = 1, n = columns.length, c; i < n; ++i) d[c = columns[i]] = +d[c];
+  return d;
+}
+
+    
+}
+
+function myFunction4() {
+
+d3.selectAll("svg > *").remove();
+document.getElementById("demo").innerHTML = "Profit over Time by Region ";
+
+
+
+d3.select(document.getElementById("viz"))
+.attr("width", 920)
+.attr("height", 405);
+
+var svg = d3.select("svg"),
+    margin = {top: 20, right: 80, bottom: 30, left: 80},
+    width = svg.attr("width") - margin.left - margin.right,
+    height = svg.attr("height") - margin.top - margin.bottom,
+    g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var parseTime = d3.timeParse("%Y%m%d");
+
+var x = d3.scaleTime().range([0, width]),
+    y = d3.scaleLinear().range([height, 0]),
+    z = d3.scaleOrdinal(d3.schemeCategory10);
+
+var line = d3.line()
+    .curve(d3.curveLinear)
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.sales); });
+
+d3.tsv("super_store_profit.txt", type, function(error, data) {
+  if (error) throw error;
+
+  var regions = data.columns.slice(1).map(function(id) {
+    return {
+      id: id,
+      values: data.map(function(d) {
+        return {date: d.date, sales: d[id]};
+      })
+    };
+  });
+
+  x.domain(d3.extent(data, function(d) { return d.date; }));
+
+  y.domain([
+    d3.min(regions, function(c) { return d3.min(c.values, function(d) { return d.sales; }); }),
+    d3.max(regions, function(c) { return d3.max(c.values, function(d) { return d.sales; }); })
+  ]);
+
+  z.domain(regions.map(function(c) { return c.id; }));
+
+  g.append("g")
+      .attr("class", "axis axis--x")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x));
+
+  g.append("g")
+      .attr("class", "axis axis--y")
+      .call(d3.axisLeft(y))
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", "0.71em")
+      .attr("fill", "#000")
+	  .attr("font-weight", "normal")
+	  .attr("font-size", "14px")
+      .text("Profit [$]");
+
+  var region = g.selectAll(".region")
+    .data(regions)
+    .enter().append("g")
+      .attr("class", "region");
+
+  region.append("path")
+      .attr("class", "line")
+      .attr("d", function(d) { return line(d.values); })
+      .style("stroke", function(d) { return z(d.id); });
+
+  region.append("text")
+      .datum(function(d) { return {id: d.id, value: d.values[d.values.length - 1]}; })
+      .attr("transform", function(d) { return "translate(" + x(d.value.date) + "," + y(d.value.sales) + ")"; })
+      .attr("x", 3)
+      .attr("dy", "0.35em")
+	  .attr("font-weight", "normal")
+      .style("font", "14px sans-serif")
+      .text(function(d) { return d.id; });
+	  
+ 
+});
+
+function type(d, _, columns) {
+  d.date = parseTime(d.date);
+  for (var i = 1, n = columns.length, c; i < n; ++i) d[c = columns[i]] = +d[c];
+  return d;
+}
+
+    
+}
+function myFunction5() {
+
+d3.selectAll("svg > *").remove();
 document.getElementById("demo").innerHTML = "Stacked bar chart";
 
 d3.select(document.getElementById("viz"))
-.attr("width", 1020)
+.attr("width", 1120)
 .attr("height", 605);
 
-var dataset = [
-		{ region: "central", dept: "furniture", profit: 53987, sales: 785116, ind: 0},
-		{ region: "central", dept: "office supplies", profit: 124093, sales: 530530, ind: 1},
-		{ region: "central", dept: "technology", profit: 280588, sales: 978957, ind: 2 },
-		
-		{ region: "east", dept: "furniture", profit: 39185, sales: 1150249, ind: 3 },
-		{ region: "east", dept: "office supplies", profit: 201480, sales: 938107, ind: 4},
-		{ region: "east", dept: "technology", profit: 234359, sales: 1054766, ind: 5 },
-		
-		{ region: "south", dept: "furniture", profit: 18835, sales: 516757, ind: 6 },
-		{ region: "south", dept: "office supplies", profit: 60786, sales: 353242, ind: 7},
-		{ region: "south", dept: "technology", profit: 27524, sales: 641950, ind: 8},
-		
-		{ region: "west", dept: "furniture", profit: 65330, sales: 726516, ind: 9},
-		{ region: "west", dept: "office supplies", profit: 65631, sales: 436505, ind: 10},
-		{ region: "west", dept: "technology", profit: 140617, sales: 839332, ind: 11 }
-	];
-	
-	
-	
-  
-  
-//Set up stack method
-	var stack = d3.stack()
-				  .keys([ "profit", "sales" ])
-				  .order(d3.stackOrderAscending);  
-
-//Data, stacked
-	var series = stack(dataset);
-
-
-	
-	
-	var svg = d3.select("svg"),
-    margin = {top: 20, right: 120, bottom: 100, left: 100},
-    width = +svg.attr("width") - margin.left - margin.right
-    height = +svg.attr("height") - margin.top - margin.bottom;
+var svg = d3.select("svg"),
+    margin = {top: 20, right: 80, bottom: 30, left: 50},
+    width = svg.attr("width") - margin.left - margin.right,
+    height = svg.attr("height") - margin.top - margin.bottom,
     g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-  
-var tooltip = d3.select("body").append("div").attr("class", "toolTip");
-  
 
+var parseTime = d3.timeParse("%Y%m%d");
 
+var x = d3.scaleTime().range([0, width]),
+    y = d3.scaleLinear().range([height, 0]),
+    z = d3.scaleOrdinal(d3.schemeCategory10);
 
-  
-//Set up scales
+var line = d3.line()
+    .curve(d3.curveBasis)
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.temperature); });
 
-//Set up scales
-	var x = d3.scaleBand()
-		.domain(d3.range(dataset.length))
-		.range([0, width])
-		.paddingInner(0.05)
-		.align(0.1);
+d3.tsv("data.tsv", type, function(error, data) {
+  if (error) throw error;
 
-		
-	var y = d3.scaleLinear()
-		.domain([0, d3.max(dataset, function(d) {
-				return d.profit + d.sales;
-			})
-		])
-		.range([height, 0]);  // <-- Flipped vertical scale
-	
-	
- 
- //Color array based on schemeCategory20
-	
+  var cities = data.columns.slice(1).map(function(id) {
+    return {
+      id: id,
+      values: data.map(function(d) {
+        return {date: d.date, temperature: d[id]};
+      })
+    };
+  });
 
-	
-	
-	var colors1 = d3.scaleOrdinal(d3.schemeCategory20);
-	
-	var colors  = ["#1f77b4", "#1f77b4", "#1f77b4", "#ff7f0e", "#ff7f0e","#ff7f0e", "#2ca02c", "#2ca02c", "#2ca02c",  "#d62728", "#d62728", "#d62728", 
-				"#aec7e8", "#aec7e8", "#aec7e8", "#ffbb78", "#ffbb78","#ffbb78", "#98df8a", "#98df8a", "#98df8a",  "#ff9896", "#ff9896", "#ff9896"];
-	
-	var color_ind = 0; // global counter
-	
+  x.domain(d3.extent(data, function(d) { return d.date; }));
 
-	
-	g.append("g")
-    .selectAll("g")
-    .data(series)
-    .enter().append("g")
-     // .attr("fill", function(d,i) {
-	//		return colors[i];
-	//	})
-    .selectAll("rect")
-    .data(function(d) { return d; })
-    .enter().append("rect")
-      .attr("x", function(d, i) {  return x(i); })
-      .attr("y", function(d) {  return y(d[1]); })
-      .attr("height", function(d) { return y(d[0]) - y(d[1]); })
-      .attr("width", x.bandwidth())
-	  .attr("fill", function(d,i){ return colors[color_ind++];})
-	  .on("mouseover", function() { tooltip.style("display", null); })
-      .on("mouseout", function() { tooltip.style("display", "none"); })
-      .on("mousemove", function(d) {
-      var xPosition = d3.mouse(this)[0] - 5;
-      var yPosition = d3.mouse(this)[1] - 5;
-      tooltip.attr("transform", "translate(" + xPosition + "," + yPosition + ")");
-      tooltip.select("text").text(d[1]-d[0]);
-    });
-	
-	 var tickLabelsInt = ['Furniture','Office Supply','Technology']
+  y.domain([
+    d3.min(cities, function(c) { return d3.min(c.values, function(d) { return d.temperature; }); }),
+    d3.max(cities, function(c) { return d3.max(c.values, function(d) { return d.temperature; }); })
+  ]);
 
-    var tickLabels = {};
-	for(var i = 0, len = dataset.length; i < len; ++i)
-		tickLabels[i] = tickLabelsInt[i%3];
-	
-// x-axis
+  z.domain(cities.map(function(c) { return c.id; }));
 
   g.append("g")
-      .attr("class", "axis")
+      .attr("class", "axis axis--x")
       .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x).tickFormat(function(d,i){ return tickLabels[i] }))
-	  .append("text")
-            .attr("x", 0.1* (width - margin.left))
-            .attr("y", margin.bottom * 0.6)
-            .attr("dx", "0.32em")
-            .attr("fill", "#000")
-            .attr("font-weight", "bold")
-            .attr("text-anchor", "start")
-			.attr("font-family", "sans-serif")
-			.attr("font-size", 14)
-            .text("Central East South West")
-			
-		.append("text")
-            .attr("x", 0.25* (width - margin.left))
-            .attr("y", margin.bottom * 0.6)
-            .attr("dx", "0.38em")
-            .attr("fill", "#000")
-            .attr("font-weight", "bold")
-            .attr("text-anchor", "start")
-			.attr("font-family", "sans-serif")
-			.attr("font-size", 14)
-            .text("East")
-	  .append("text")
-            .attr("x", (width - margin.left)/ 2)
-            .attr("y", margin.bottom * 0.5)
-            .attr("dx", "0.32em")
-            .attr("fill", "#000")
-            .attr("font-weight", "bold")
-            .attr("text-anchor", "start")
-			.attr("font-family", "sans-serif")
-			.attr("font-size", 14)
-            .text("Region/Department");
+      .call(d3.axisBottom(x));
 
-// Left y-axis
-			
-	g.append("g")
-      .attr("class", "axis")
-      .call(d3.axisLeft(y).ticks(null, "s"))
+  g.append("g")
+      .attr("class", "axis axis--y")
+      .call(d3.axisLeft(y))
     .append("text")
-      .attr("x", - 0.95 *margin.left)
-     // .attr("y", y(y.ticks().pop()) + 0.5)
-	  .attr("y", height/2)
-      .attr("dy", "0.32em")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", "0.71em")
       .attr("fill", "#000")
-      .attr("font-weight", "bold")
-      .attr("text-anchor", "start")
-	  .attr("font-size", "14px")
-      .text("Sales/Profit");
+      .text("Temperature, ºF");
 
-// Right y-axis
-// No need
-  
-//	  g.append("g")
-//     .attr("class", "axis")
-//    .call(d3.axisRight(y).ticks(null, "s"))
-//	  .attr("transform", "translate (" + width + ", 0)")
-//    .append("text")
-//      .attr("x", 0.35*margin.right)
-//	  .attr("y", height/2)
-//      .attr("dy", "0.32em")
-//      .attr("fill", "#000")
-//     .attr("font-weight", "bold")
-//      .attr("text-anchor", "start")
-//	  .attr("font-size", "14px")
-//      .text("Profit");
-	
-// Legend
-	
-	var legend = g.append("g")
-      .attr("font-family", "sans-serif")
-      .attr("font-size", 14)
-	  .attr("font-weight", "normal")
-      .attr("text-anchor", "end")
-    .selectAll("g")
-    .data(["Central Profit", "Central Sales", "East Profit", "East Sales", "South Profit", "South Sales", "West Profit", "West Sales"])
+  var city = g.selectAll(".city")
+    .data(cities)
     .enter().append("g")
-      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+      .attr("class", "city");
 
-	 
+  city.append("path")
+      .attr("class", "line")
+      .attr("d", function(d) { return line(d.values); })
+      .style("stroke", function(d) { return z(d.id); });
 
-	  legend.append("text")
-		  .attr("x", width + 0.80 * margin.right)
-		  .attr("y", 9.5)
-		  .attr("dy", "0.32em")
-		  .attr("font-family", "sans-serif")
-		  .attr("font-size", 14)
-		  .text(function(d) { return d; });
-	
-	legend.append("rect")
-		  .attr("x", width + 0.85 * margin.right)
-		  .attr("width", 39)
-		  .attr("height", 19)
-		  .attr("fill", function(d,i){return colors1(i)});
-	  
-  
+  city.append("text")
+      .datum(function(d) { return {id: d.id, value: d.values[d.values.length - 1]}; })
+      .attr("transform", function(d) { return "translate(" + x(d.value.date) + "," + y(d.value.temperature) + ")"; })
+      .attr("x", 3)
+      .attr("dy", "0.35em")
+      .style("font", "10px sans-serif")
+      .text(function(d) { return d.id; });
+});
 
-	  
-// Prep the tooltip bits, initial display is hidden
-  var tooltip = svg.append("g")
-    .attr("class", "tooltip")
-    .style("display", "none");
-      
-  tooltip.append("rect")
-    .attr("width", 60)
-    .attr("height", 20)
-    .attr("fill", "white")
-    .style("opacity", 0.5);
-
-  tooltip.append("text")
-    .attr("x", 30)
-    .attr("dy", "1.2em")
-    .style("text-anchor", "middle")
-    .attr("font-size", "12px")
-    .attr("font-weight", "bold");  	
-
-    
+function type(d, _, columns) {
+  d.date = parseTime(d.date);
+  for (var i = 1, n = columns.length, c; i < n; ++i) d[c = columns[i]] = +d[c];
+  return d;
+}
 }
 
 
