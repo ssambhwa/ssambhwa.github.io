@@ -2,6 +2,7 @@
 <html>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3-annotation/1.12.1/d3-annotation.min.js"></script>
 
 <head>
 
@@ -18,15 +19,7 @@ a:hover {
     color: black;
 }
 
-.previous {
-    background-color: #f1f1f1;
-    color: black;
-}
 
-.next {
-    background-color: #4CAF50;
-    color: white;
-}
 
 .round {
     border-radius: 50%;
@@ -95,8 +88,55 @@ body {
   border: 1px solid #6F257F;
   padding: 14px;
   text-align: center;
+  
+  
+}
+.wrapper {
+    text-align: center;
 }
 
+.button {
+    position: absolute;
+    top: 50%;
+}
+body{
+        background-color: whitesmoke;
+     }
+
+    :root {
+      --annotation-color: black;
+    }
+
+     svg {
+        background-color: white;
+        font-family: 'Lato';
+     }
+
+    .annotation path {
+      stroke: var(--annotation-color);
+      fill: none;
+    }
+
+    .annotation path.connector-arrow, 
+    .annotation path.connector-dot, 
+    .title text, .annotation text {
+      fill: var(--annotation-color);
+    }
+
+    .annotation-note-bg {
+      fill: rgba(0, 0, 0, 0);
+    }
+
+    .annotation-note-title, text.title {
+      font-weight: bold;
+	  font-family: sans-serif;
+	  font-size: 14px;
+    }
+
+    text.title {
+      font-size: 1.2em;
+    }
+	
 </style>
 
 </head>
@@ -106,24 +146,97 @@ body {
 
 <button class="accordion">About this Visualization</button>
 <div class="panel">
-  <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+
+ <h3>Introduction</h3>
+  <p>
+  This narrative data visualization follows an interactive slideshow structure.<br>
+  It attempts to answer questions related to sales and profits amounts of popular items from the famous Superstore sales dataset in Tableau [1]. <br>
+  In particular,in the superstore, how do sales amounts and profit compare by department, region and how did sales/profit amounts vary over time?<br>
+  The narrative visualization consists of 4 scenes to help answer the above questions:<br>
+  <ol>
+  <li>Sales/Profit by Department</li>
+  <li>Sales/Profit by Department/Region</li>
+  <li>Sales over Time by Region</li>
+  <li>Profit over Time by Region>
+  </ol>
+  The visualization contains annotations, parameters, and triggers as described for each scene and across scenes below:<br>
+  </p>
+  
+  The user is prompted to select a scene by clicking a button. 
+  Each button number is an example of a parameter indicating which scene to jump to or watch and represents the state of the narrative visualization.
+  Heading and text positions above each chart are maintained (i.e. remain the scene) as the user navigates across scenes.
+  Annotations and legends for Scene 1 and 2 are cleared every time the user visits these scenes.
+  Line labels and SVG areas in Scene 3 and 4 are maintained across the scenes.
+  
+  <h3>Sales/Profit by Department</h3>
+  <p> We start off by analyzing both the sales and the profit of all the items nationwide. The items are categorized into 3 categories:<br>
+  <ul>
+  <li>Furniture</li>
+  <li>Office Supplies</li>
+  <li>Technology</li>
+  </ul>
+  The data is presented in the form of a stackedbar chart layout. The chart has a left and right y-axis (dual axis) and a horizontal x-axis <br>
+  Use of annotation is demonstrated via a text label pointing via an arrow to an important observation that the profit of office supply items.
+  Also, another example of an annotation in this chart is a legend describing what is plotted in the stacked bar chart.
+  In this scene, the user is also prompted to hover the mouse over each individual bar to see the actual sales and profit amounts for each department. 
+  This is achieved via d3 tooltips using mouseover events. 
+  This is a good example of a trigger which is a function of the department type that the item belongs to. 
+  Specifically the event is the mouse position on the individual bar and the parameters are Sales/Profit amount and department type (Furniture, Office Supplies, Technology).
+  Note that the position where the mouse is placed on the bar is also an example of a user interface event and it is communicated to the user explicitly via a text prompt above the chart.
+   </p>
+  <h3>Sales/Profit by Department/Region</h3>
+  <p> This is the 2nd scene in the visualization and is a natural and consistent progression of the 1st scene where we investigate further the same stacked bar chart, region by region.
+  The data is presented in the form of a nested stackedbar chart layout. The chart also has a left and right y-axis (dual axis) and a horizontal x-axis <br>
+  Use of annotation is demonstrated via a legend describing 2-dimensional information (Region, Profit/Sales). 
+  Also, the parameters in this chart are a combination of department type (Furniture, Office Supplies, Technology) and region (Central, East, South, West).
+  Similar to the previous scene, in an attempt to maintain visual consistency, 
+  the user is also prompted to hover the mouse over each individual bar to see the actual sales and profit amounts for each department leading to triggers as a function of sales/profit and region/department type.
+  The event for this trigger again is the mouse position on the individual bar and the parameters are Sales/Profit amount, Region (Central, East, South, West) and department type (Furniture, Office Supplies, Technology).
+  Again as in the 1st scene, the position where the mouse is placed on the bar is also an example of a user interface event and it is communicated to the user explicitly via a text prompt above the chart.
+  Also, another trigger (static)in the form of the bar color as a function of sales/profit/region has been encoded while maintaining the same uniformity across department type. 
+  The event in this case is the color in the legend and the parameters are Sales/Profit and Region/Department type.
+  </p>
+  <h3>Sales over Time by Region</h3>
+  The next scene describes how sales amounts vary over time for different regions. It is described via a time series multi-line chart.
+  The labels for each line is a good example of annotation describing which region each line represents
+  The parameters in this chart are the dates (on the x-axis) and the regions (Central/East/South/West)
+  The labels for each line are dynamically generated by automatically extracting the region column heading from the tsv file. 
+  This is a nice example of a trigger- if one were to change the region name in the csv file, this would trigger a change in the labels upon a browser refresh.
+  
+  <h3>Profit over Time by Region</h3>
+  The final scene (4th scene) describes how profits amounts vary over time for different regions and is almost identical in structure to Scene 3 except that Sales amount is replaced by Profit amount.
+  It is also described via a time series multi-line chart and is visually consistent with Scene 3 in every sense (annotations, parameters and triggers).
+  
+ 
+  
+  <h3>References</h3>
+  
+  <ol type="1">
+  <li>Super Store Sales Dataset: https://community.tableau.com/servlet/JiveServlet/downloadBody/1236-102-1-1149/Sample%20-%20Superstore%20Sales%20(Excel).xls</li>
+  </ol>
+
+
+ 
 </div>
 
 
-<p>Click the button to select a page.</p>
+<p>Click the button to select a scene or chart.</p>
+
+<div class="wrapper">
+    <button onclick="myFunction1()">1</button>
+	<button onclick="myFunction2()">2</button>
+	<button onclick="myFunction3()">3</button>
+	<button onclick="myFunction4()">4</button>
+</div>
 
 
-<button onclick="myFunction1()">1</button>
-<button onclick="myFunction2()">2</button>
-<button onclick="myFunction3()">3</button>
-<button onclick="myFunction4()">4</button>
 
 
 
 
 
-
-<p id="demo"></p>
+<p id="para1"></p>
+<p id="para2"></p>
 <div id="svg-container">
     <svg id="viz" width="1020" height="605" > </svg>
 </div>
@@ -146,18 +259,18 @@ for (i = 0; i < acc.length; i++) {
     }
 }
 
-document.getElementById("demo").style.fontFamily = "sans-sarif";
-document.getElementById("demo").style.fontWeight = "bold";
-document.getElementById("demo").style.fontSize = "medium";
-document.getElementById("demo").style.textAlign = "left";
-document.getElementById("demo").style.color = "black";
+document.getElementById("para1").style.fontFamily = "sans-serif";
+document.getElementById("para1").style.fontWeight = "normal";
+document.getElementById("para1").style.fontSize = "medium";
+document.getElementById("para1").style.textAlign = "left";
+document.getElementById("para1").style.color = "black";
 
 
 function myFunction1() {
 
 d3.selectAll("svg > *").remove();
-document.getElementById("demo").innerHTML = "Sales/Profit by Department";
-
+document.getElementById("para1").innerHTML = "Sales/Profit by Department";
+document.getElementById("para2").innerHTML = "Please hover mouse over each bar to see exact dollar amounts";
 
   
   
@@ -186,7 +299,7 @@ d3.select(document.getElementById("viz"))
 				
 
 	var svg = d3.select("svg"),
-    margin = {top: 100, right: 300, bottom: 50, left: 100},
+    margin = {top: 100, right: 320, bottom: 50, left: 100},
     width = +svg.attr("width") - margin.left - margin.right
     height = +svg.attr("height") - margin.top - margin.bottom;
     g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -243,7 +356,7 @@ d3.select(document.getElementById("viz"))
 
 	
 	
- var tickLabels = ['Furniture','Office Supply','Technology']
+ var tickLabels = ['Furniture','Office Supplies','Technology']
 
  
 
@@ -259,7 +372,7 @@ d3.select(document.getElementById("viz"))
             .attr("y", margin.bottom * 0.9)
             .attr("dx", "0.32em")
             .attr("fill", "#000")
-            .attr("font-weight", "bold")
+            .attr("font-weight", "normal")
             .attr("text-anchor", "start")
 			.attr("font-family", "sans-serif")
 			.attr("font-size", 14)
@@ -271,15 +384,15 @@ d3.select(document.getElementById("viz"))
       .attr("class", "axis")
       .call(d3.axisLeft(y).ticks(null, "s"))
     .append("text")
-      .attr("x", - 0.8*margin.left)
+      .attr("x", - 0.9*margin.left)
      // .attr("y", y(y.ticks().pop()) + 0.5)
 	  .attr("y", height/2)
       .attr("dy", "0.32em")
       .attr("fill", "#000")
-      .attr("font-weight", "bold")
+      .attr("font-weight", "normal")
       .attr("text-anchor", "start")
 	  .attr("font-size", "14px")
-      .text("Sales");
+      .text("Sales[$]");
 
 // Right y-axis
 	  
@@ -292,10 +405,10 @@ d3.select(document.getElementById("viz"))
 	  .attr("y", height/2)
       .attr("dy", "0.32em")
       .attr("fill", "#000")
-      .attr("font-weight", "bold")
+      .attr("font-weight", "normal")
       .attr("text-anchor", "start")
 	  .attr("font-size", "14px")
-      .text("Profit");
+      .text("Profit[$]");
 	
 // Legend
 	
@@ -336,7 +449,7 @@ d3.select(document.getElementById("viz"))
   tooltip.append("rect")
     .attr("width", 60)
     .attr("height", 20)
-    .attr("fill", "white")
+    .attr("fill", "yellow")
     .style("opacity", 0.5);
 
   tooltip.append("text")
@@ -346,17 +459,46 @@ d3.select(document.getElementById("viz"))
     .attr("font-size", "12px")
     .attr("font-weight", "bold");  
 	 
-  
+  const annotations = [
+        {
+          note: {
+            label: "is highest for Office Supply items even though it's absolute Sales is the lowest",
+            title: "Profit as a % of Sales",
+            wrap: 250,
+			align: "left"
+          },
+          connector: {
+            end: "arrow",
+            
+          },
+          x: 260,
+          y: 410,
+          dy: -20,
+          dx: 200
+        }]
+
+		
+		
+
+	const makeAnnotations = d3.annotation()
+	  .type(d3.annotationLabel)
+	  .annotations(annotations)
+
+	d3.select("svg")
+	  .append("g")
+	  .attr("class", "annotation-group")
+	  .call(makeAnnotations)
 
 }
 function myFunction2() {
 
 d3.selectAll("svg > *").remove();
-document.getElementById("demo").innerHTML = "Sales/Profit by Region/Department";
+document.getElementById("para1").innerHTML = "Sales/Profit by Region/Department";
+document.getElementById("para2").innerHTML = "Please hover mouse over each bar to see exact dollar amounts";
 
 d3.select(document.getElementById("viz"))
 .attr("width", 1120)
-.attr("height", 545);
+.attr("height", 505);
 
 var dataset = [
 		{ region: "central", dept: "furniture", profit: 53987, sales: 785116-53987, ind: 0},
@@ -392,7 +534,7 @@ var dataset = [
 	
 	
 	var svg = d3.select("svg"),
-    margin = {top: 20, right: 160, bottom: 100, left: 120},
+    margin = {top: 20, right: 160, bottom: 100, left: 100},
     width = +svg.attr("width") - margin.left - margin.right
     height = +svg.attr("height") - margin.top - margin.bottom;
     g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -461,7 +603,7 @@ var tooltip = d3.select("body").append("div").attr("class", "toolTip");
 	  tooltip.select("text").text(d[1]);
     });
 	
-	 var tickLabelsInt = ['Furniture','Office Supply','Technology']
+	 var tickLabelsInt = ['Furniture','Office Supplies','Technology']
 
     var tickLabels = {};
 	for(var i = 0, len = dataset.length; i < len; ++i)
@@ -478,7 +620,7 @@ var tooltip = d3.select("body").append("div").attr("class", "toolTip");
 		.attr("y", margin.bottom * 0.6)
 		.attr("dx", "0.32em")
 		.attr("fill", "#000")
-		.attr("font-weight", "bold")
+		.attr("font-weight", "normal")
 		.attr("text-anchor", "start")
 		.attr("font-family", "sans-serif")
 		.attr("font-size", 14)
@@ -493,7 +635,7 @@ var tooltip = d3.select("body").append("div").attr("class", "toolTip");
 	.attr("dx", "0.32em")
 //	.attr("dy", "7.0em")
 	.attr("fill", "#000")
-	.attr("font-weight", "bold")
+	.attr("font-weight", "normal")
 	.attr("text-anchor", "start")
 	.attr("font-family", "sans-serif")
 	.attr("font-size", 14)
@@ -512,10 +654,10 @@ var tooltip = d3.select("body").append("div").attr("class", "toolTip");
 	  .attr("y", height/2)
       .attr("dy", "0.32em")
       .attr("fill", "#000")
-      .attr("font-weight", "bold")
+      .attr("font-weight", "normal")
       .attr("text-anchor", "start")
 	  .attr("font-size", "14px")
-      .text("Sales/Profit");
+      .text("Sales[$]");
 
 // Right y-axis
 
@@ -529,10 +671,10 @@ var tooltip = d3.select("body").append("div").attr("class", "toolTip");
 	  .attr("y", height/2)
       .attr("dy", "0.32em")
       .attr("fill", "#000")
-     .attr("font-weight", "bold")
+     .attr("font-weight", "normal")
       .attr("text-anchor", "start")
 	  .attr("font-size", "14px")
-      .text("Sales/Profit");
+      .text("Profit[$]");
 	
 // Legend
 	
@@ -589,7 +731,8 @@ var tooltip = d3.select("body").append("div").attr("class", "toolTip");
 function myFunction3() {
 
 d3.selectAll("svg > *").remove();
-document.getElementById("demo").innerHTML = "Sales over Time by Region ";
+document.getElementById("para1").innerHTML = "Sales over Time by Region ";
+document.getElementById("para2").innerHTML = "";
 
 
 
@@ -612,7 +755,8 @@ var x = d3.scaleTime().range([0, width]),
 var line = d3.line()
     .curve(d3.curveLinear)
     .x(function(d) { return x(d.date); })
-    .y(function(d) { return y(d.sales); });
+    .y(function(d) { return y(d.sales); })
+	
 
 d3.tsv("super_store_sales.txt", type, function(error, data) {
   if (error) throw error;
@@ -670,9 +814,10 @@ d3.tsv("super_store_sales.txt", type, function(error, data) {
 	  .attr("font-weight", "normal")
       .style("font", "14px sans-serif")
       .text(function(d) { return d.id; });
-	  
- 
-});
+
+  
+
+}); 
 
 function type(d, _, columns) {
   d.date = parseTime(d.date);
@@ -680,13 +825,14 @@ function type(d, _, columns) {
   return d;
 }
 
-    
-}
 
+
+}
 function myFunction4() {
 
 d3.selectAll("svg > *").remove();
-document.getElementById("demo").innerHTML = "Profit over Time by Region ";
+document.getElementById("para1").innerHTML = "Profit over Time by Region ";
+document.getElementById("para2").innerHTML = "";
 
 
 
@@ -767,6 +913,7 @@ d3.tsv("super_store_profit.txt", type, function(error, data) {
 	  .attr("font-weight", "normal")
       .style("font", "14px sans-serif")
       .text(function(d) { return d.id; });
+   
 	  
  
 });
@@ -779,93 +926,7 @@ function type(d, _, columns) {
 
     
 }
-function myFunction5() {
 
-d3.selectAll("svg > *").remove();
-document.getElementById("demo").innerHTML = "Stacked bar chart";
-
-d3.select(document.getElementById("viz"))
-.attr("width", 1120)
-.attr("height", 605);
-
-var svg = d3.select("svg"),
-    margin = {top: 20, right: 80, bottom: 30, left: 50},
-    width = svg.attr("width") - margin.left - margin.right,
-    height = svg.attr("height") - margin.top - margin.bottom,
-    g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-var parseTime = d3.timeParse("%Y%m%d");
-
-var x = d3.scaleTime().range([0, width]),
-    y = d3.scaleLinear().range([height, 0]),
-    z = d3.scaleOrdinal(d3.schemeCategory10);
-
-var line = d3.line()
-    .curve(d3.curveBasis)
-    .x(function(d) { return x(d.date); })
-    .y(function(d) { return y(d.temperature); });
-
-d3.tsv("data.tsv", type, function(error, data) {
-  if (error) throw error;
-
-  var cities = data.columns.slice(1).map(function(id) {
-    return {
-      id: id,
-      values: data.map(function(d) {
-        return {date: d.date, temperature: d[id]};
-      })
-    };
-  });
-
-  x.domain(d3.extent(data, function(d) { return d.date; }));
-
-  y.domain([
-    d3.min(cities, function(c) { return d3.min(c.values, function(d) { return d.temperature; }); }),
-    d3.max(cities, function(c) { return d3.max(c.values, function(d) { return d.temperature; }); })
-  ]);
-
-  z.domain(cities.map(function(c) { return c.id; }));
-
-  g.append("g")
-      .attr("class", "axis axis--x")
-      .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x));
-
-  g.append("g")
-      .attr("class", "axis axis--y")
-      .call(d3.axisLeft(y))
-    .append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("y", 6)
-      .attr("dy", "0.71em")
-      .attr("fill", "#000")
-      .text("Temperature, ºF");
-
-  var city = g.selectAll(".city")
-    .data(cities)
-    .enter().append("g")
-      .attr("class", "city");
-
-  city.append("path")
-      .attr("class", "line")
-      .attr("d", function(d) { return line(d.values); })
-      .style("stroke", function(d) { return z(d.id); });
-
-  city.append("text")
-      .datum(function(d) { return {id: d.id, value: d.values[d.values.length - 1]}; })
-      .attr("transform", function(d) { return "translate(" + x(d.value.date) + "," + y(d.value.temperature) + ")"; })
-      .attr("x", 3)
-      .attr("dy", "0.35em")
-      .style("font", "10px sans-serif")
-      .text(function(d) { return d.id; });
-});
-
-function type(d, _, columns) {
-  d.date = parseTime(d.date);
-  for (var i = 1, n = columns.length, c; i < n; ++i) d[c = columns[i]] = +d[c];
-  return d;
-}
-}
 
 
 </script>
